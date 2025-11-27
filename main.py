@@ -983,7 +983,7 @@ Number of categories: {categories_count}"""
     def show_about(self):
         if translate:
             QMessageBox.about(self, 'About WhatTheEat',
-                              'WhatToEat Alpha\n\n'
+                              'WhatToEat Beta\n\n'
                               'Your personal electronic cookbook.\n\n'
                               'Features:\n'
                               '• Create and edit recipes\n'
@@ -993,7 +993,7 @@ Number of categories: {categories_count}"""
                               '• And one surprise ;P')
         else:
             QMessageBox.about(self, 'О программе ЧёПоесть',
-                              'ЧёПоесть Alpha\n\n'
+                              'ЧёПоесть Beta\n\n'
                               'Ваша персональная электронная кулинарная книга.\n\n'
                               'Возможности:\n'
                               '• Создание и редактирование рецептов\n'
