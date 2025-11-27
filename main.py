@@ -332,7 +332,7 @@ class WhatTheEat(QMainWindow):
             if translate:
                 if selected_filter == 'All':
                     cursor.execute('''
-                        SELECT r.*, c.name as category_name 
+                        SELECT r.id, r.name, r.category_id, r.prep_time, r.ingredients, r.instructions, c.name as category_name 
                         FROM recipes r 
                         JOIN categories c ON r.category_id = c.id 
                         ORDER BY r.name
@@ -348,7 +348,7 @@ class WhatTheEat(QMainWindow):
                     }
                     db_category = category_map.get(selected_filter, selected_filter)
                     cursor.execute('''
-                        SELECT r.*, c.name as category_name 
+                        SELECT r.id, r.name, r.category_id, r.prep_time, r.ingredients, r.instructions, c.name as category_name 
                         FROM recipes r 
                         JOIN categories c ON r.category_id = c.id 
                         WHERE c.name = ? 
@@ -357,14 +357,14 @@ class WhatTheEat(QMainWindow):
             else:
                 if selected_filter == 'Все':
                     cursor.execute('''
-                        SELECT r.*, c.name as category_name 
+                        SELECT r.id, r.name, r.category_id, r.prep_time, r.ingredients, r.instructions, c.name as category_name 
                         FROM recipes r 
                         JOIN categories c ON r.category_id = c.id 
                         ORDER BY r.name
                     ''')
                 else:
                     cursor.execute('''
-                        SELECT r.*, c.name as category_name 
+                        SELECT r.id, r.name, r.category_id, r.prep_time, r.ingredients, r.instructions, c.name as category_name 
                         FROM recipes r 
                         JOIN categories c ON r.category_id = c.id 
                         WHERE c.name = ? 
@@ -381,7 +381,7 @@ class WhatTheEat(QMainWindow):
                     'id': recipe[0],
                     'name': recipe[1],
                     'category_id': recipe[2],
-                    'category': recipe[7],  # category_name из JOIN
+                    'category': recipe[6],
                     'prep_time': recipe[3],
                     'ingredients': recipe[4].split('\n') if recipe[4] else [],
                     'instructions': recipe[5]
@@ -483,7 +483,7 @@ class WhatTheEat(QMainWindow):
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS categories (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL UNIQUE,
+                    name TEXT NOT NULL UNIQUE
                 )
             ''')
             cursor.execute('''
@@ -631,7 +631,7 @@ class WhatTheEat(QMainWindow):
         try:
             cursor = self.conn.cursor()
             cursor.execute('''
-                SELECT r.*, c.name as category_name 
+                SELECT r.id, r.name, r.category_id, r.prep_time, r.ingredients, r.instructions, c.name as category_name 
                 FROM recipes r 
                 JOIN categories c ON r.category_id = c.id 
                 ORDER BY r.name
@@ -644,7 +644,7 @@ class WhatTheEat(QMainWindow):
                     'id': recipe[0],
                     'name': recipe[1],
                     'category_id': recipe[2],
-                    'category': recipe[7],
+                    'category': recipe[6],
                     'prep_time': recipe[3],
                     'ingredients': recipe[4].split('\n') if recipe[4] else [],
                     'instructions': recipe[5]
@@ -908,7 +908,7 @@ Number of categories: {categories_count}"""
                 if (selected_category == "Случайная" or
                         (translate and selected_category == "Random")):
                     cursor.execute('''
-                        SELECT r.*, c.name as category_name 
+                        SELECT r.id, r.name, r.category_id, r.prep_time, r.ingredients, r.instructions, c.name as category_name 
                         FROM recipes r 
                         JOIN categories c ON r.category_id = c.id 
                         ORDER BY RANDOM() LIMIT 1
@@ -926,7 +926,7 @@ Number of categories: {categories_count}"""
                         }
                         search_category = category_map.get(selected_category, selected_category)
                     cursor.execute('''
-                        SELECT r.*, c.name as category_name 
+                        SELECT r.id, r.name, r.category_id, r.prep_time, r.ingredients, r.instructions, c.name as category_name 
                         FROM recipes r 
                         JOIN categories c ON r.category_id = c.id 
                         WHERE c.name = ? 
@@ -938,7 +938,7 @@ Number of categories: {categories_count}"""
                         'id': recipe[0],
                         'name': recipe[1],
                         'category_id': recipe[2],
-                        'category': recipe[7],
+                        'category': recipe[6],
                         'prep_time': recipe[3],
                         'ingredients': recipe[4].split('\n') if recipe[4] else [],
                         'instructions': recipe[5]
