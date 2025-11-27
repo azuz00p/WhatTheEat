@@ -3,7 +3,9 @@
 
 [![PyQT](https://img.shields.io/badge/build_with-PyQT-blue)](https://pypi.org/project/PyQt6/)
 
-More information about the project below, for english description and instructions, scroll down
+More information about the project below. For english description and instructions, scroll down.
+
+Also if you find some bugs or issues, feel free to tell me about them in Issues section. I will appreciate it a lot!
 
 ## RU Описание
 
@@ -29,7 +31,7 @@ More information about the project below, for english description and instructio
 
 ### Установка
 
-Больше информации будет добавлено после тестирвки, простите.
+Установите файл `WhatTheEat.exe`. Да и всё в целом.
 
 ### Настройка программы
 
@@ -63,7 +65,7 @@ It includes:
 
 ### Installation
 
-More information will be added after the testing, sorry.
+Download file `WhatTheEat.exe`. And that's it.
 
 ### Setting up the program
 
