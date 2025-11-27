@@ -450,7 +450,7 @@ class WhatTheEat(QMainWindow):
                 content.append("-" * 30)
                 content.append(instructions)
                 content.append("")
-                content.append(f"Exported from WhatTheEat")
+                content.append(f"Exported from WhatTheEat: https://github.com/azuz00p/WhatTheEat")
             else:
                 content.append("=" * 50)
                 content.append(f"РЕЦЕПТ: {name}")
@@ -466,7 +466,7 @@ class WhatTheEat(QMainWindow):
                 content.append("-" * 30)
                 content.append(instructions)
                 content.append("")
-                content.append(f"Экспортировано из ЧёПоесть")
+                content.append(f"Экспортировано из ЧёПоесть: https://github.com/azuz00p/WhatTheEat")
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(content))
             if translate:
