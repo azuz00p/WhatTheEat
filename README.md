@@ -27,11 +27,11 @@ Also if you find some bugs or issues, feel free to tell me about them in Issues 
 
 - Python
 - PyQT6
-- Random
 
 ### Установка
 
-Установите файл `WhatTheEat.exe`. Да и всё в целом.
+1) Откройте файл `WhatTheEat_Release.exe`.
+2) Нажмите кнопку `View raw`.
 
 ### Настройка программы
 
@@ -61,11 +61,11 @@ It includes:
 
 - Python
 - PyQT6
-- Random
 
 ### Installation
 
-Download file `WhatTheEat.exe`. And that's it.
+1) Open file `WhatTheEat_Release.exe`.
+2) Click `View raw`.
 
 ### Setting up the program
 

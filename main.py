@@ -1,7 +1,6 @@
 import sys
 import os
 import sqlite3
-import random
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QListWidget, QListWidgetItem,
                              QTextEdit, QLineEdit, QLabel, QMessageBox, QSplitter,
@@ -106,7 +105,7 @@ class WhatTheEat(QMainWindow):
                 db_name = os.path.basename(self.current_db_path)
                 self.setWindowTitle(f'WhatTheEat - {db_name}')
             else:
-                self.setWindowTitle('WhatToEat - Your Cookbook')
+                self.setWindowTitle('WhatTheEat - Your Cookbook')
         else:
             if self.current_db_path:
                 db_name = os.path.basename(self.current_db_path)
@@ -181,6 +180,7 @@ class WhatTheEat(QMainWindow):
             self.time_label.setText('Time:')
             self.ingredients_label.setText('Ingredients:')
             self.instructions_label.setText('Instructions:')
+            self.time_unit_label.setText('min')
         else:
             self.name_input.setPlaceholderText('Введите название рецепта')
             self.category_combo.clear()
@@ -195,6 +195,7 @@ class WhatTheEat(QMainWindow):
             self.time_label.setText('Время:')
             self.ingredients_label.setText('Ингредиенты:')
             self.instructions_label.setText('Инструкции:')
+            self.time_unit_label.setText('мин')
         if translate:
             self.random_recipe_button.setText('WhatTheEat™')
         else:
@@ -288,12 +289,14 @@ class WhatTheEat(QMainWindow):
         form_layout.addRow(self.category_label, self.category_combo)
         time_widget = QWidget()
         time_layout = QHBoxLayout(time_widget)
+        time_layout.setContentsMargins(0, 0, 0, 0)
         self.time_label = QLabel('Время:')
         self.prep_time = QSpinBox()
         self.prep_time.setRange(1, 600)
-        self.prep_time.setSuffix(' мин')
+        self.time_unit_label = QLabel('мин')
         time_layout.addWidget(self.time_label)
         time_layout.addWidget(self.prep_time)
+        time_layout.addWidget(self.time_unit_label)
         time_layout.addStretch()
         form_layout.addRow(time_widget)
         self.ingredients_label = QLabel('Ингредиенты:')
@@ -788,7 +791,7 @@ class WhatTheEat(QMainWindow):
             if self.current_recipe_id is not None:
                 cursor.execute('''
                     UPDATE recipes 
-                    SET name = ?, category_id = ?, prep_time = ?, ingredients = ?, instructions = ?, modified_date = CURRENT_TIMESTAMP
+                    SET name = ?, category_id = ?, prep_time = ?, ingredients = ?, instructions = ?
                     WHERE id = ?
                 ''', (recipe_data['name'], recipe_data['category_id'], recipe_data['prep_time'],
                       recipe_data['ingredients'], recipe_data['instructions'], self.current_recipe_id))
@@ -983,7 +986,7 @@ Number of categories: {categories_count}"""
     def show_about(self):
         if translate:
             QMessageBox.about(self, 'About WhatTheEat',
-                              'WhatToEat Beta\n\n'
+                              'WhatTheEat Release\n\n'
                               'Your personal electronic cookbook.\n\n'
                               'Features:\n'
                               '• Create and edit recipes\n'
@@ -993,7 +996,7 @@ Number of categories: {categories_count}"""
                               '• And one surprise ;P')
         else:
             QMessageBox.about(self, 'О программе ЧёПоесть',
-                              'ЧёПоесть Beta\n\n'
+                              'ЧёПоесть Release\n\n'
                               'Ваша персональная электронная кулинарная книга.\n\n'
                               'Возможности:\n'
                               '• Создание и редактирование рецептов\n'
