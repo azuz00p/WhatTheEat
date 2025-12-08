@@ -19,8 +19,8 @@ Also if you find some bugs or issues, feel free to tell me about them in Issues 
 Использованные технологии:
 - Python 3.x
 - Библиотеки:
- -  PyQt6
- -  SQLite3
+  -  PyQt6
+  -  SQLite3
 
 ## RU Ожидания от проекта
 - Создания удобной электронной кулинарной книги
@@ -54,8 +54,8 @@ It includes:
 Used tools:
 - Python 3.x
 - Libraries:
-  - PyQt6
-  - SQLite3
+   - PyQt6
+   - SQLite3
 
 ## EN Expectations from the project
 - Creating a comfortable electronic cookbook
