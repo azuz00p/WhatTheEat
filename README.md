@@ -16,17 +16,18 @@ Also if you find some bugs or issues, feel free to tell me about them in Issues 
 - Хранение рецептов в базе данных, используя SQL-таблицу
 - Возможность работы с несколькими базами данных
 
+Использованные технологии:
+- Python 3.x
+- Библиотеки:
+ -  PyQt6
+ -  SQLite3
+
 ## RU Ожидания от проекта
 - Создания удобной электронной кулинарной книги
 - Реализация функций: создания, редактирования, удаления и хранения рецептов, генерации списка покупок
 - Реализация перевода на другой язык
 
 ## RU Начало работы
-
-### Зависимости
-
-- Python
-- PyQT6
 
 ### Установка
 
@@ -50,17 +51,18 @@ It includes:
 - Storing recipes in database, using SQL-table
 - Ability to work with  multiple databases
 
+Used tools:
+- Python 3.x
+- Libraries:
+  - PyQt6
+  - SQLite3
+
 ## EN Expectations from the project
 - Creating a comfortable electronic cookbook
 - Implementation of functions: creating, editing, deleting and storing recipes, generation of a shopping list
 - Implementation of other languages support
 
 ## EN Getting started
-
-### Dependencies
-
-- Python
-- PyQT6
 
 ### Installation
 
