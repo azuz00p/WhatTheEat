@@ -21,7 +21,7 @@ Also if you find any bugs or issues, feel free to tell me about them in Issues s
 - Библиотеки:
  -  PyQt6
  -  SQLite3
- - Random
+ -  Random
 
 ## RU Ожидания от проекта
 - Создания удобной электронной кулинарной книги
