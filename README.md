@@ -32,8 +32,8 @@ Also if you find any bugs or issues, feel free to tell me about them in Issues s
 
 ### Установка
 
-1) Откройте файл `WhatTheEat_Release.exe`.
-2) Нажмите кнопку `View raw`.
+1) Откройте последний релиз.
+2) Скачайте файл `WhatTheEat {версия}.exe`.
 
 Если Windows будет блокировать приложение, нажмите "Подробнее", затем "Выполнить в любом случае".
 
@@ -44,6 +44,8 @@ Also if you find any bugs or issues, feel free to tell me about them in Issues s
 Для создания/открытия базы данных нажмите сверху кнопку "Файл", затем выберите "Новая база данных" для создания или "Открыть базу данных" для открытия базы данных.
 
 Альтернативно можно нажать Ctrl + N для создания или Ctrl + O для открытия базы данных.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## EN Description
 
@@ -70,8 +72,8 @@ Used tools:
 
 ### Installation
 
-1) Open file `WhatTheEat_Release.exe`.
-2) Click `View raw`.
+1) Open the latest release.
+2) Download file `WhatTheEat {version}.exe`.
 
 If Windows will block the app from launching, press "More info", then press "Run anyway".
 
