@@ -5,7 +5,7 @@
 
 More information about the project below. For english description and instructions, scroll down.
 
-Also if you find some bugs or issues, feel free to tell me about them in Issues section. I will appreciate it a lot!
+Also if you find any bugs or issues, feel free to tell me about them in Issues section. I will appreciate it a lot!
 
 ## RU Описание
 
