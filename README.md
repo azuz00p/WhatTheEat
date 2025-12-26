@@ -21,6 +21,7 @@ Also if you find some bugs or issues, feel free to tell me about them in Issues 
 - Библиотеки:
  -  PyQt6
  -  SQLite3
+ - Random
 
 ## RU Ожидания от проекта
 - Создания удобной электронной кулинарной книги
@@ -33,6 +34,8 @@ Also if you find some bugs or issues, feel free to tell me about them in Issues 
 
 1) Откройте файл `WhatTheEat_Release.exe`.
 2) Нажмите кнопку `View raw`.
+
+Если Windows будет блокировать приложение, нажмите "Подробнее", затем "Выполнить в любом случае".
 
 ### Настройка программы
 
@@ -56,6 +59,7 @@ Used tools:
 - Libraries:
   - PyQt6
   - SQLite3
+  - Random
 
 ## EN Expectations from the project
 - Creating a comfortable electronic cookbook
@@ -68,6 +72,8 @@ Used tools:
 
 1) Open file `WhatTheEat_Release.exe`.
 2) Click `View raw`.
+
+If Windows will block the app from launching, press "More info", then press "Run anyway".
 
 ### Setting up the program
 

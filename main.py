@@ -1,6 +1,7 @@
 import sys
 import os
 import sqlite3
+import random
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QListWidget, QListWidgetItem,
                              QTextEdit, QLineEdit, QLabel, QMessageBox, QSplitter,
@@ -9,7 +10,9 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
 from PyQt6.QtGui import QAction, QFont
 from PyQt6.QtCore import Qt, QSettings
 
+
 translate = False
+dark_theme = False
 
 
 class CategoryDialog(QDialog):
@@ -54,8 +57,21 @@ class WhatTheEat(QMainWindow):
         self.categories_ru = ['Завтрак', 'Обед', 'Ужин', 'Десерт', 'Напиток', 'Другое']
         self.categories_en = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Drink', 'Other']
         self.category_id_map = {}
+        self.load_settings()
         self.initUI()
         self.load_last_database()
+        self.apply_theme()
+
+    def load_settings(self):
+        global translate, dark_theme
+        settings = QSettings('ЧёПоесть', 'WhatTheEat')
+        translate = settings.value('language', 'ru') == 'en'
+        dark_theme = settings.value('theme', 'light') == 'dark'
+
+    def save_settings(self):
+        settings = QSettings('ЧёПоесть', 'WhatTheEat')
+        settings.setValue('language', 'en' if translate else 'ru')
+        settings.setValue('theme', 'dark' if dark_theme else 'light')
 
     def initUI(self):
         self.setWindowTitle('ЧёПоесть - Ваша кулинарная книга')
@@ -66,7 +82,11 @@ class WhatTheEat(QMainWindow):
         main_layout = QVBoxLayout(central_widget)
         top_layout = QHBoxLayout()
         top_layout.addStretch()
-        self.language_button = QPushButton('RU')
+        self.theme_button = QPushButton('🌙' if dark_theme else '☀')
+        self.theme_button.setFixedSize(50, 30)
+        self.theme_button.clicked.connect(self.toggle_theme)
+        top_layout.addWidget(self.theme_button)
+        self.language_button = QPushButton('EN' if translate else 'RU')
         self.language_button.setFixedSize(50, 30)
         self.language_button.clicked.connect(self.toggle_language)
         top_layout.addWidget(self.language_button)
@@ -82,16 +102,216 @@ class WhatTheEat(QMainWindow):
         main_layout.addLayout(content_layout)
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch()
-        self.random_recipe_button = QPushButton('ЧёПоесть™')
+        self.random_recipe_button = QPushButton('WhatTheEat™' if translate else 'ЧёПоесть™')
         self.random_recipe_button.setFixedSize(120, 30)
         self.random_recipe_button.clicked.connect(self.show_random_recipe)
         bottom_layout.addWidget(self.random_recipe_button)
         main_layout.addLayout(bottom_layout)
 
+    def toggle_theme(self):
+        global dark_theme
+        dark_theme = not dark_theme
+        self.apply_theme()
+        if dark_theme:
+            if random.random() < 0.1:
+                self.theme_button.setText('🦇')
+            else:
+                self.theme_button.setText('🌙')
+        else:
+            self.theme_button.setText('☀')
+        self.save_settings()
+
+    def apply_theme(self):
+        if dark_theme:
+            dark_stylesheet = """
+                QMainWindow, QWidget {
+                    background-color: #2b2b2b;
+                    color: #ffffff;
+                }
+                QLabel {
+                    color: #ffffff;
+                }
+                QLineEdit, QTextEdit, QSpinBox, QComboBox {
+                    background-color: #3c3c3c;
+                    color: #ffffff;
+                    border: 1px solid #555555;
+                }
+                QPushButton {
+                    background-color: #4a4a4a;
+                    color: #ffffff;
+                    border: 1px solid #555555;
+                    padding: 5px;
+                }
+                QPushButton:hover {
+                    background-color: #5a5a5a;
+                }
+                QListWidget {
+                    background-color: #3c3c3c;
+                    color: #ffffff;
+                    border: 1px solid #555555;
+                }
+                QMenuBar {
+                    background-color: #2b2b2b;
+                    color: #ffffff;
+                }
+                QMenuBar::item:selected {
+                    background-color: #4a4a4a;
+                }
+                QMenu {
+                    background-color: #3c3c3c;
+                    color: #ffffff;
+                }
+                QMenu::item:selected {
+                    background-color: #4a4a4a;
+                }
+                QDialog {
+                    background-color: #2b2b2b;
+                    color: #ffffff;
+                }
+            """
+            self.setStyleSheet(dark_stylesheet)
+        else:
+            self.setStyleSheet("")
+
+    def import_recipe_from_txt(self):
+        if not self.conn:
+            if translate:
+                self.show_warning('Error', 'First open or create a database')
+            else:
+                self.show_warning('Ошибка', 'Сначала откройте или создайте базу данных')
+            return
+        if translate:
+            file_path, _ = QFileDialog.getOpenFileName(
+                self, 'Import Recipe from TXT',
+                '', 'Text Files (*.txt)')
+        else:
+            file_path, _ = QFileDialog.getOpenFileName(
+                self, 'Импорт рецепта из TXT',
+                '', 'Text Files (*.txt)')
+        if not file_path:
+            return
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            if ("Экспортировано из ЧёПоесть" in content or
+                    "Exported from WhatTheEat" in content):
+                lines = content.split('\n')
+                recipe_data = {}
+                is_russian_file = "Экспортировано из ЧёПоесть" in content
+                for i, line in enumerate(lines):
+                    line = line.strip()
+                    if line.startswith("РЕЦЕПТ:") or line.startswith("RECIPE:"):
+                        recipe_data['name'] = line.split(':', 1)[1].strip()
+                    elif line.startswith("Категория:") or line.startswith("Category:"):
+                        category = line.split(':', 1)[1].strip()
+                        recipe_data['category'] = category
+                    elif line.startswith("Время приготовления:") or line.startswith("Preparation time:"):
+                        time_part = line.split(':', 1)[1].strip()
+                        try:
+                            import re
+                            numbers = re.findall(r'\d+', time_part)
+                            if numbers:
+                                recipe_data['prep_time'] = int(numbers[0])
+                            else:
+                                recipe_data['prep_time'] = 30
+                        except:
+                            recipe_data['prep_time'] = 30
+                    elif line == "ИНГРЕДИЕНТЫ:" or line == "INGREDIENTS:":
+                        ingredients = []
+                        j = i + 2
+                        while j < len(lines) and lines[j].strip() and not lines[j].startswith("ИНСТРУКЦИЯ") and not \
+                        lines[j].startswith("COOKING"):
+                            ingredients.append(lines[j].strip())
+                            j += 1
+                        recipe_data['ingredients'] = '\n'.join(ingredients)
+                    elif line == "ИНСТРУКЦИЯ ПРИГОТОВЛЕНИЯ:" or line == "COOKING INSTRUCTIONS:":
+                        instructions = []
+                        j = i + 2
+                        while j < len(lines) and lines[j].strip() and not lines[j].startswith("Экспортировано") and not \
+                        lines[j].startswith("Exported"):
+                            instructions.append(lines[j].strip())
+                            j += 1
+                        recipe_data['instructions'] = '\n'.join(instructions)
+                if 'name' not in recipe_data or not recipe_data['name']:
+                    if translate:
+                        raise ValueError("Recipe name not found in file")
+                    else:
+                        raise ValueError("Название рецепта не найдено в файле")
+                if 'ingredients' not in recipe_data:
+                    recipe_data['ingredients'] = ''
+                if 'instructions' not in recipe_data:
+                    recipe_data['instructions'] = ''
+                if 'prep_time' not in recipe_data:
+                    recipe_data['prep_time'] = 30
+                if 'category' not in recipe_data:
+                    recipe_data['category'] = 'Другое'
+                ru_to_en_map = {
+                    'Завтрак': 'Breakfast',
+                    'Обед': 'Lunch',
+                    'Ужин': 'Dinner',
+                    'Десерт': 'Dessert',
+                    'Напиток': 'Drink',
+                    'Другое': 'Other'
+                }
+                en_to_ru_map = {
+                    'Breakfast': 'Завтрак',
+                    'Lunch': 'Обед',
+                    'Dinner': 'Ужин',
+                    'Dessert': 'Десерт',
+                    'Drink': 'Напиток',
+                    'Other': 'Другое'
+                }
+                category_in_file = recipe_data['category']
+                if not is_russian_file:
+                    if category_in_file in en_to_ru_map:
+                        category_in_db = en_to_ru_map[category_in_file]
+                    else:
+                        for ru_cat, en_cat in ru_to_en_map.items():
+                            if ru_cat == category_in_file:
+                                category_in_db = category_in_file
+                                break
+                        else:
+                            category_in_db = 'Другое'
+                else:
+                    category_in_db = category_in_file
+                category_id = self.category_id_map.get(category_in_db)
+                if category_id is None:
+                    category_id = self.category_id_map.get('Другое')
+                    if category_id is None:
+                        cursor = self.conn.cursor()
+                        cursor.execute('INSERT OR IGNORE INTO categories (name) VALUES (?)', ('Другое',))
+                        self.conn.commit()
+                        self.load_category_map()
+                        category_id = self.category_id_map.get('Другое')
+                cursor = self.conn.cursor()
+                cursor.execute('''
+                    INSERT INTO recipes (name, category_id, prep_time, ingredients, instructions)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (recipe_data['name'], category_id, recipe_data['prep_time'],
+                      recipe_data['ingredients'], recipe_data['instructions']))
+                self.conn.commit()
+                self.load_recipes()
+
+                if translate:
+                    self.show_info('Success', f'Recipe "{recipe_data["name"]}" successfully imported!')
+                else:
+                    self.show_info('Успех', f'Рецепт "{recipe_data["name"]}" успешно импортирован!')
+            else:
+                if translate:
+                    self.show_warning('Error',
+                                      'File does not match the export template. Please select a file exported from WhatTheEat.')
+                else:
+                    self.show_warning('Ошибка',
+                                      'Файл не соответствует шаблону экспорта. Пожалуйста, выберите файл, экспортированный из ЧёПоесть.')
+
+        except Exception as e:
+            self.show_error('Import failed' if translate else 'Ошибка импорта', str(e))
+
     def toggle_language(self):
         global translate
         translate = not translate
         self.retranslate_ui()
+        self.save_settings()
 
     def retranslate_ui(self):
         self.language_button.setText('EN' if translate else 'RU')
@@ -175,6 +395,7 @@ class WhatTheEat(QMainWindow):
             self.save_button.setText('Save Recipe')
             self.cancel_button.setText('Cancel')
             self.export_button.setText('Export to TXT')
+            self.import_button.setText('Import from TXT')
             self.name_label.setText('Name:')
             self.category_label.setText('Category:')
             self.time_label.setText('Time:')
@@ -190,6 +411,7 @@ class WhatTheEat(QMainWindow):
             self.save_button.setText('Сохранить рецепт')
             self.cancel_button.setText('Отменить')
             self.export_button.setText('Экспорт в TXT')
+            self.import_button.setText('Импорт из TXT')
             self.name_label.setText('Название:')
             self.category_label.setText('Категория:')
             self.time_label.setText('Время:')
@@ -203,59 +425,86 @@ class WhatTheEat(QMainWindow):
 
     def create_menu(self):
         menubar = self.menuBar()
-        file_menu = menubar.addMenu('Файл')
-        new_db_action = QAction('Новая база данных', self)
+        if translate:
+            file_menu_title = 'File'
+            new_db_text = 'New Database'
+            open_db_text = 'Open Database'
+            new_recipe_text = 'New Recipe'
+            save_text = 'Save Recipe'
+            export_text = 'Export Recipe to TXT'
+            exit_text = 'Exit'
+            db_menu_title = 'Database'
+            info_text = 'Database Info'
+            help_menu_title = 'Help'
+            about_text = 'About'
+        else:
+            file_menu_title = 'Файл'
+            new_db_text = 'Новая база данных'
+            open_db_text = 'Открыть базу данных'
+            new_recipe_text = 'Новый рецепт'
+            save_text = 'Сохранить рецепт'
+            export_text = 'Экспорт рецепта в TXT'
+            exit_text = 'Выход'
+            db_menu_title = 'База данных'
+            info_text = 'Информация о базе'
+            help_menu_title = 'Помощь'
+            about_text = 'О программе'
+        file_menu = menubar.addMenu(file_menu_title)
+        new_db_action = QAction(new_db_text, self)
         new_db_action.setShortcut('Ctrl+N')
         new_db_action.triggered.connect(self.create_new_database)
         file_menu.addAction(new_db_action)
-        open_db_action = QAction('Открыть базу данных', self)
+        open_db_action = QAction(open_db_text, self)
         open_db_action.setShortcut('Ctrl+O')
         open_db_action.triggered.connect(self.open_database)
         file_menu.addAction(open_db_action)
         file_menu.addSeparator()
-        new_recipe_action = QAction('Новый рецепт', self)
+        new_recipe_action = QAction(new_recipe_text, self)
         new_recipe_action.setShortcut('Ctrl+R')
         new_recipe_action.triggered.connect(self.add_recipe)
         file_menu.addAction(new_recipe_action)
-        save_action = QAction('Сохранить рецепт', self)
+        save_action = QAction(save_text, self)
         save_action.setShortcut('Ctrl+S')
         save_action.triggered.connect(self.save_recipe)
         file_menu.addAction(save_action)
-        export_action = QAction('Экспорт рецепта в TXT', self)
+        export_action = QAction(export_text, self)
         export_action.setShortcut('Ctrl+E')
         export_action.triggered.connect(self.export_recipe_to_txt)
         file_menu.addAction(export_action)
         file_menu.addSeparator()
-        exit_action = QAction('Выход', self)
+        exit_action = QAction(exit_text, self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
-        db_menu = menubar.addMenu('База данных')
-        info_action = QAction('Информация о базе', self)
+        db_menu = menubar.addMenu(db_menu_title)
+        info_action = QAction(info_text, self)
         info_action.triggered.connect(self.show_database_info)
         db_menu.addAction(info_action)
-        help_menu = menubar.addMenu('Помощь')
-        about_action = QAction('О программе', self)
+        help_menu = menubar.addMenu(help_menu_title)
+        about_action = QAction(about_text, self)
         about_action.triggered.connect(self.show_about)
         help_menu.addAction(about_action)
 
     def create_recipe_list_panel(self):
         panel = QWidget()
         layout = QVBoxLayout(panel)
-        self.db_info_label = QLabel('База данных не выбрана')
+        self.db_info_label = QLabel('Database not selected' if translate else 'База данных не выбрана')
         self.db_info_label.setFont(QFont('Arial', 10))
         self.db_info_label.setStyleSheet('color: gray;')
         layout.addWidget(self.db_info_label)
-        self.recipes_title = QLabel('Мои рецепты')
+        self.recipes_title = QLabel('My Recipes' if translate else 'Мои рецепты')
         self.recipes_title.setFont(QFont('Arial', 14, QFont.Weight.Bold))
         layout.addWidget(self.recipes_title)
         search_filter_layout = QHBoxLayout()
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText('Поиск рецептов...')
+        self.search_input.setPlaceholderText('Search recipes...' if translate else 'Поиск рецептов...')
         self.search_input.textChanged.connect(self.search_recipes)
         search_filter_layout.addWidget(self.search_input)
         self.filter_combo = QComboBox()
-        self.filter_combo.addItems(['Все', 'Завтрак', 'Обед', 'Ужин', 'Десерт', 'Напиток', 'Другое'])
+        if translate:
+            self.filter_combo.addItems(['All', 'Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Drink', 'Other'])
+        else:
+            self.filter_combo.addItems(['Все', 'Завтрак', 'Обед', 'Ужин', 'Десерт', 'Напиток', 'Другое'])
         self.filter_combo.currentTextChanged.connect(self.filter_recipes)
         search_filter_layout.addWidget(self.filter_combo)
         layout.addLayout(search_filter_layout)
@@ -263,9 +512,9 @@ class WhatTheEat(QMainWindow):
         self.recipe_list.itemClicked.connect(self.on_recipe_selected)
         layout.addWidget(self.recipe_list)
         button_layout = QHBoxLayout()
-        self.add_button = QPushButton('Добавить рецепт')
+        self.add_button = QPushButton('Add Recipe' if translate else 'Добавить рецепт')
         self.add_button.clicked.connect(self.add_recipe)
-        self.delete_button = QPushButton('Удалить рецепт')
+        self.delete_button = QPushButton('Delete Recipe' if translate else 'Удалить рецепт')
         self.delete_button.clicked.connect(self.delete_recipe)
         button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.delete_button)
@@ -275,51 +524,59 @@ class WhatTheEat(QMainWindow):
     def create_recipe_detail_panel(self):
         panel = QWidget()
         layout = QVBoxLayout(panel)
-        self.detail_title = QLabel('Выберите рецепт')
+        self.detail_title = QLabel('Select Recipe' if translate else 'Выберите рецепт')
         self.detail_title.setFont(QFont('Arial', 16, QFont.Weight.Bold))
         layout.addWidget(self.detail_title)
         form_layout = QFormLayout()
-        self.name_label = QLabel('Название:')
+        self.name_label = QLabel('Name:' if translate else 'Название:')
         self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText('Введите название рецепта')
+        self.name_input.setPlaceholderText('Enter recipe name' if translate else 'Введите название рецепта')
         form_layout.addRow(self.name_label, self.name_input)
-        self.category_label = QLabel('Категория:')
+        self.category_label = QLabel('Category:' if translate else 'Категория:')
         self.category_combo = QComboBox()
-        self.category_combo.addItems(self.categories_ru)
+        if translate:
+            self.category_combo.addItems(self.categories_en)
+        else:
+            self.category_combo.addItems(self.categories_ru)
         form_layout.addRow(self.category_label, self.category_combo)
         time_widget = QWidget()
         time_layout = QHBoxLayout(time_widget)
         time_layout.setContentsMargins(0, 0, 0, 0)
-        self.time_label = QLabel('Время:')
+        self.time_label = QLabel('Time:' if translate else 'Время:')
         self.prep_time = QSpinBox()
         self.prep_time.setRange(1, 600)
-        self.time_unit_label = QLabel('мин')
+        self.time_unit_label = QLabel('min' if translate else 'мин')
         time_layout.addWidget(self.time_label)
         time_layout.addWidget(self.prep_time)
         time_layout.addWidget(self.time_unit_label)
         time_layout.addStretch()
         form_layout.addRow(time_widget)
-        self.ingredients_label = QLabel('Ингредиенты:')
+        self.ingredients_label = QLabel('Ingredients:' if translate else 'Ингредиенты:')
         self.ingredients_input = QTextEdit()
-        self.ingredients_input.setPlaceholderText('Введите ингредиенты (каждый с новой строки)')
+        self.ingredients_input.setPlaceholderText(
+            'Enter ingredients (each on new line)' if translate else 'Введите ингредиенты (каждый с новой строки)')
         self.ingredients_input.setMaximumHeight(150)
         form_layout.addRow(self.ingredients_label, self.ingredients_input)
-        self.instructions_label = QLabel('Инструкции:')
+        self.instructions_label = QLabel('Instructions:' if translate else 'Инструкции:')
         self.instructions_input = QTextEdit()
-        self.instructions_input.setPlaceholderText('Введите инструкции по приготовлению')
+        self.instructions_input.setPlaceholderText(
+            'Enter cooking instructions' if translate else 'Введите инструкции по приготовлению')
         self.instructions_input.setMinimumHeight(200)
         form_layout.addRow(self.instructions_label, self.instructions_input)
         layout.addLayout(form_layout)
         button_layout = QHBoxLayout()
-        self.save_button = QPushButton('Сохранить рецепт')
+        self.save_button = QPushButton('Save Recipe' if translate else 'Сохранить рецепт')
         self.save_button.clicked.connect(self.save_recipe)
-        self.cancel_button = QPushButton('Отменить')
+        self.cancel_button = QPushButton('Cancel' if translate else 'Отменить')
         self.cancel_button.clicked.connect(self.cancel_edit)
-        self.export_button = QPushButton('Экспорт в TXT')
+        self.export_button = QPushButton('Export to TXT' if translate else 'Экспорт в TXT')
         self.export_button.clicked.connect(self.export_recipe_to_txt)
+        self.import_button = QPushButton('Import from TXT' if translate else 'Импорт из TXT')
+        self.import_button.clicked.connect(self.import_recipe_from_txt)
         button_layout.addWidget(self.save_button)
         button_layout.addWidget(self.cancel_button)
         button_layout.addWidget(self.export_button)
+        button_layout.addWidget(self.import_button)
         button_layout.addStretch()
         layout.addLayout(button_layout)
         layout.addStretch()
@@ -506,7 +763,6 @@ class WhatTheEat(QMainWindow):
                     cursor.execute('INSERT OR IGNORE INTO categories (name) VALUES (?)', (category,))
                 except:
                     pass
-
             conn.commit()
             conn.close()
             return True
@@ -777,7 +1033,6 @@ class WhatTheEat(QMainWindow):
             else:
                 self.show_warning('Ошибка', f'Категория "{save_category}" не найдена в базе данных')
             return
-
         ingredients_text = self.ingredients_input.toPlainText().strip()
         recipe_data = {
             'name': name,
@@ -1008,6 +1263,7 @@ Number of categories: {categories_count}"""
     def closeEvent(self, event):
         if self.conn:
             self.conn.close()
+        self.save_settings()
         event.accept()
 
 
